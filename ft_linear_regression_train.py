@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
+import csv
+import joblib 
 
 # this loss function is normally used just for calculating the loss and analysis purpose. (since our main goal is to minimize this function we will train the model using the gradient_descent function)
 def mean_squared_error(m, b, x, y):
@@ -75,35 +77,38 @@ def train(x, y, epochs=500, learning_rate=0.01):
 
 def main():
     data = pd.read_csv("./data.csv")
-    # print(data.describe())
 
-    # data seems to have high variations in both columns, and needs to be standarized
-    scaler = StandardScaler()
-    scaled_data = scaler.fit_transform(data)
-    data = pd.DataFrame(scaled_data, columns=['km', 'price'])
+    # data seems to have high variations in both columns, and needs to be standarized (z-score standarization)
+    mean = data.mean()
+    std_dev = data.std()
+    scaled_data = (data - mean)/std_dev
     # print(data.describe())
+    # print(scaled_data.describe())
+
 
     # train the model to get the most optimum m, b
-    m, b = train(data['km'], data['price'])
+    m, b = train(scaled_data['km'], scaled_data['price'])
 
     # plotting the data points
     plt.scatter(data['km'], data['price'])
 
     # plotting the linear regression model
-    x_values = data['km']
-    y_values =(m * x_values) + b
+    x_values = scaled_data['km']
+    y_values = (m * x_values) + b
+    x_values = (x_values * std_dev['km']) + mean['km']
+    y_values = (y_values * std_dev['price']) + mean['price']
     plt.plot(x_values, y_values, color='red')
     plt.show()
 
     # calculating the mse
-    print(mean_squared_error(m,b,data['km'], data['price']))
+    print("the mean squared error for this model (precision of the algorithm) : " + str(mean_squared_error(m,b,scaled_data['km'], scaled_data['price'])))
+
+    # writing the model slope and y-intercept in a file
+    with open('model_params.csv', 'w', newline='') as model_file:
+        writer = csv.writer(model_file)
+        writer.writerow(['m', 'b', 'mean_km', 'std_dev_km', 'mean_price', 'std_dev_price'])
+        writer.writerow([m, b, mean['km'], std_dev['km'], mean['price'], std_dev['price']])
 
 
 if __name__ == '__main__':
     main()
-
-
-
-# Standardization (Z-score normalization): Subtract the mean from each 
-# data point and then divide by the standard deviation.
-# This ensures that the resulting data has a mean of 0 and a standard deviation of 1
