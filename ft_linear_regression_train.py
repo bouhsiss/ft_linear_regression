@@ -2,7 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 import csv
-import joblib 
+import joblib
+import seaborn as sns
 
 # this loss function is normally used just for calculating the loss and analysis purpose. (since our main goal is to minimize this function we will train the model using the gradient_descent function)
 def mean_squared_error(m, b, x, y):
@@ -54,7 +55,7 @@ def gradient_descent(current_m, current_b, x, y, learning_rate):
     updated_b = current_b - (learning_rate * b_gradient)
     return(updated_m, updated_b)
 
-def train(x, y, epochs=500, learning_rate=0.01):
+def train(x, y, epochs=7000, learning_rate=0.01):
     """
         Train a linear regression model using gradient descent.
 
@@ -74,40 +75,43 @@ def train(x, y, epochs=500, learning_rate=0.01):
     return m,b
 
 
-
 def main():
     data = pd.read_csv("./data.csv")
 
     # data seems to have high variations in both columns, and needs to be standarized (z-score standarization)
-    mean = data.mean()
-    std_dev = data.std()
-    scaled_data = (data - mean)/std_dev
-    # print(data.describe())
-    # print(scaled_data.describe())
+    min_km = data['km'].min()
+    max_km = data['km'].max()
+    min_price = data['price'].min()
+    max_price = data['price'].max()
+    scaled_km = (data['km'] - min_km) / (max_km - min_km)
+    scaled_price = (data['price'] - min_price) / (max_price - min_price)
+    print(data.describe())
+    print(scaled_km.describe())
+    print(scaled_price.describe())
 
 
     # train the model to get the most optimum m, b
-    m, b = train(scaled_data['km'], scaled_data['price'])
+    m, b = train(scaled_km, scaled_price)
 
     # plotting the data points
     plt.scatter(data['km'], data['price'])
 
     # plotting the linear regression model
-    x_values = scaled_data['km']
+    x_values = scaled_km
     y_values = (m * x_values) + b
-    x_values = (x_values * std_dev['km']) + mean['km']
-    y_values = (y_values * std_dev['price']) + mean['price']
+    x_values = (x_values * (max_km - min_km)) + min_km
+    y_values = (y_values * (max_price - min_price)) + min_price
     plt.plot(x_values, y_values, color='red')
     plt.show()
 
     # calculating the mse
-    print("the mean squared error for this model (precision of the algorithm) : " + str(mean_squared_error(m,b,scaled_data['km'], scaled_data['price'])))
+    print("the mean squared error for this model (precision of the algorithm) : " + str(mean_squared_error(m,b,scaled_km, scaled_price)))
 
     # writing the model slope and y-intercept in a file
     with open('model_params.csv', 'w', newline='') as model_file:
         writer = csv.writer(model_file)
-        writer.writerow(['m', 'b', 'mean_km', 'std_dev_km', 'mean_price', 'std_dev_price'])
-        writer.writerow([m, b, mean['km'], std_dev['km'], mean['price'], std_dev['price']])
+        writer.writerow(['m', 'b', 'min_km', 'max_km', 'min_price', 'max_price'])
+        writer.writerow([m, b, min_km, max_km, min_price, max_price])
 
 
 if __name__ == '__main__':

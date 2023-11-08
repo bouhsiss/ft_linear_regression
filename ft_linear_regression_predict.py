@@ -3,13 +3,13 @@ import sys
 import pandas as pd
 
 class ModelParameters:
-    def __init__(self, m, b, mean_km, std_dev_km, mean_price, std_dev_price):
+    def __init__(self, m, b, min_km, max_km, min_price, max_price):
         self.m = m
         self.b = b
-        self.mean_km = mean_km
-        self.std_dev_km = std_dev_km
-        self.mean_price = mean_price
-        self.std_dev_price = std_dev_price
+        self.min_km = min_km
+        self.max_km = max_km
+        self.min_price = min_price
+        self.max_price = max_price
 
 params = None
 
@@ -22,26 +22,30 @@ def load_model_params(file_path):
             row = next(reader)
             m = float(row['m'])
             b = float(row['b'])
-            mean_km = float(row['mean_km'])
-            std_dev_km = float(row['std_dev_km'])
-            mean_price = float(row['mean_price'])
-            std_dev_price = float(row['std_dev_price'])
+            min_km = float(row['min_km'])
+            max_km = float(row['max_km'])
+            min_price = float(row['min_price'])
+            max_price = float(row['max_price'])
 
-            params = ModelParameters(m, b, mean_km, std_dev_km, mean_price, std_dev_price)
+            params = ModelParameters(m, b, min_km, max_km, min_price, max_price)
     except (FileNotFoundError, KeyError, ValueError) as e:
         print(f"Error: {e}")
         sys.exit(1)
 
 # Function to make predictions
 def predict(x, m, b):
+    print("m " + str(m) + " b " + str(b))
     return (m * x )+ b
 
 def scale_down_x(x):
-    
-    return((x - params.mean_km)/ params.std_dev_km)
+    scaled_down_x = (x - params.min_km) / (params.max_km - params.min_km)
+    print("scaled down x " + str(x) + " : " + str(scaled_down_x))
+    return((x - params.min_km) / (params.max_km - params.min_km))
 
 def scale_up_y(y):
-    return((y * params.std_dev_price) + params.mean_price)
+    scaled_up_y = (y * (params.max_price - params.min_price)) + params.min_price
+    print("scaled up y " + str(y) + " : " + str(scaled_up_y))
+    return((y * (params.max_price - params.min_price)) + params.min_price)
 
 def main():
     load_model_params('model_params.csv')
