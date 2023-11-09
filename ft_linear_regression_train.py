@@ -44,18 +44,28 @@ def gradient_descent(current_m, current_b, x, y, learning_rate):
             (float, float): Updated slope(m) and y-intercept (b) after one step of gradient descent.
     """
 
-    n = float(len(x))
 
-    y_pred = (current_m * x) + current_b
 
-    m_gradient = (-2/n) * sum(x * (y - y_pred)) # derivative of mse wrt m
-    b_gradient = (-2/n) * sum(y - y_pred) # derivative of mse wrt b
+    n = len(x)
 
-    updated_m = current_m - (learning_rate * m_gradient)
-    updated_b = current_b - (learning_rate * b_gradient)
+    m_gradient = 0
+    b_gradient = 0
+
+    for j in range(n):
+        y_pred = (current_m * x[j]) + current_b
+        m_gradient += ((y_pred - y[j]) * x[j])
+        b_gradient += (y_pred - y[j])
+    
+
+
+
+    updated_m = current_m - (m_gradient * 2/n) * learning_rate
+    updated_b = current_b - (b_gradient * 2/n) * learning_rate
+
     return(updated_m, updated_b)
 
-def train(x, y, epochs=7000, learning_rate=0.01):
+
+def train(x, y, epochs=10000, learning_rate=0.01):
     """
         Train a linear regression model using gradient descent.
 
