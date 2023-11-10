@@ -86,7 +86,7 @@ def train(x, y, epochs=10000, learning_rate=0.01):
 
 
 def main():
-    data = pd.read_csv("./data.csv")
+    data = pd.read_csv("../data.csv")
 
     # data seems to have high variations in both columns, and needs to be standarized (z-score standarization)
     min_km = data['km'].min()
@@ -95,9 +95,7 @@ def main():
     max_price = data['price'].max()
     scaled_km = (data['km'] - min_km) / (max_km - min_km)
     scaled_price = (data['price'] - min_price) / (max_price - min_price)
-    print(data.describe())
-    print(scaled_km.describe())
-    print(scaled_price.describe())
+
 
 
     # train the model to get the most optimum m, b
@@ -118,7 +116,7 @@ def main():
     print("the mean squared error for this model (precision of the algorithm) : " + str(mean_squared_error(m,b,scaled_km, scaled_price)))
 
     # writing the model slope and y-intercept in a file
-    with open('model_params.csv', 'w', newline='') as model_file:
+    with open('../model_params.csv', 'w', newline='') as model_file:
         writer = csv.writer(model_file)
         writer.writerow(['m', 'b', 'min_km', 'max_km', 'min_price', 'max_price'])
         writer.writerow([m, b, min_km, max_km, min_price, max_price])
