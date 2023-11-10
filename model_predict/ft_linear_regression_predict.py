@@ -3,9 +3,9 @@ import sys
 import pandas as pd
 
 class ModelParameters:
-    def __init__(self, m, b, min_km, max_km, min_price, max_price):
-        self.m = m
-        self.b = b
+    def __init__(self, theta1, theta0, min_km, max_km, min_price, max_price):
+        self.theta1 = theta1
+        self.theta0 = theta0
         self.min_km = min_km
         self.max_km = max_km
         self.min_price = min_price
@@ -20,21 +20,21 @@ def load_model_params(file_path):
         with open(file_path, 'r') as file:
             reader = csv.DictReader(file)
             row = next(reader)
-            m = float(row['m'])
-            b = float(row['b'])
+            theta1 = float(row['theta1'])
+            theta0 = float(row['theta0'])
             min_km = float(row['min_km'])
             max_km = float(row['max_km'])
             min_price = float(row['min_price'])
             max_price = float(row['max_price'])
 
-            params = ModelParameters(m, b, min_km, max_km, min_price, max_price)
+            params = ModelParameters(theta1, theta0, min_km, max_km, min_price, max_price)
     except (FileNotFoundError, KeyError, ValueError) as e:
         print(f"Error: {e}")
         sys.exit(1)
 
 # Function to make predictions
-def predict(x, m, b):
-    return (m * x )+ b
+def predict(x, theta1, theta0):
+    return (theta1 * x )+ theta0
 
 def scale_down_x(x):
     scaled_down_x = (x - params.min_km) / (params.max_km - params.min_km)
@@ -52,7 +52,7 @@ def main():
         if(x_input < 0):
             print("Negative mileage? You've entered the Twilight Zone of car predictions. Please provide a positive mileage value and try again.")
         else :
-            predicted_y = scale_up_y(predict(scale_down_x(x_input), params.m, params.b))
+            predicted_y = scale_up_y(predict(scale_down_x(x_input), params.theta1, params.theta0))
             if(predicted_y < 0):
                 print("Are you sure this isn't a spaceship?")
             else :

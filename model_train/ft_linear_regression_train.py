@@ -6,7 +6,7 @@ import joblib
 import seaborn as sns
 
 # this loss function is normally used just for calculating the loss and analysis purpose. (since our main goal is to minimize this function we will train the model using the gradient_descent function)
-def mean_squared_error(m, b, x, y):
+def mean_squared_error(theta1, theta0, x, y):
     """
         Calculate the Mean Squared Error (MSE) for a linear regression model.
 
@@ -21,7 +21,7 @@ def mean_squared_error(m, b, x, y):
             made by the linear model with given `actual_m` and `actual_b`.
     """
 
-    predicted_y = (m * x) + b
+    predicted_y = (theta1 * x) + theta0
 
     squared_error = (y - predicted_y) ** 2
 
@@ -29,7 +29,7 @@ def mean_squared_error(m, b, x, y):
 
     return(mse)
 
-def gradient_descent(current_m, current_b, x, y, learning_rate):
+def gradient_descent(current_theta1, current_theta0, x, y, learning_rate):
     """
         Perform one step of gradient descent to update the model parameters.
         
@@ -48,21 +48,21 @@ def gradient_descent(current_m, current_b, x, y, learning_rate):
 
     n = len(x)
 
-    m_gradient = 0
-    b_gradient = 0
+    theta1_gradient = 0
+    theta0_gradient = 0
 
     for j in range(n):
-        y_pred = (current_m * x[j]) + current_b
-        m_gradient += ((y_pred - y[j]) * x[j])
-        b_gradient += (y_pred - y[j])
+        y_pred = (current_theta1 * x[j]) + current_theta0
+        theta1_gradient += ((y_pred - y[j]) * x[j])
+        theta0_gradient += (y_pred - y[j])
     
 
 
 
-    updated_m = current_m - (m_gradient * 2/n) * learning_rate
-    updated_b = current_b - (b_gradient * 2/n) * learning_rate
+    updated_theta1 = current_theta1 - (theta1_gradient * 2/n) * learning_rate
+    updated_theta0 = current_theta0 - (theta0_gradient * 2/n) * learning_rate
 
-    return(updated_m, updated_b)
+    return(updated_theta1, updated_theta0)
 
 
 def train(x, y, epochs=10000, learning_rate=0.01):
@@ -78,11 +78,11 @@ def train(x, y, epochs=10000, learning_rate=0.01):
         Returns:
         (float, float): The trained slope (m) and y-intercept (b) of the linear regression model.
     """
-    m = 0
-    b = 0
+    theta1 = 0
+    theta0 = 0
     for i in range(epochs):
-        m, b = gradient_descent(m, b, x, y, learning_rate)
-    return m,b
+        theta1, theta0 = gradient_descent(theta1, theta0, x, y, learning_rate)
+    return theta1,theta0
 
 
 def main():
@@ -101,14 +101,14 @@ def main():
 
 
     # train the model to get the most optimum m, b
-    m, b = train(scaled_km, scaled_price)
+    theta1, theta0 = train(scaled_km, scaled_price)
 
 
     # writing the model slope and y-intercept in a file
     with open('../model_params.csv', 'w', newline='') as model_file:
         writer = csv.writer(model_file)
-        writer.writerow(['m', 'b', 'min_km', 'max_km', 'min_price', 'max_price'])
-        writer.writerow([m, b, min_km, max_km, min_price, max_price])
+        writer.writerow(['theta1', 'theta0', 'min_km', 'max_km', 'min_price', 'max_price'])
+        writer.writerow([theta1, theta0, min_km, max_km, min_price, max_price])
 
 
 if __name__ == '__main__':
